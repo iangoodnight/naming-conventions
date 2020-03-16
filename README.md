@@ -1,10 +1,10 @@
-#naming-conventions
+# naming-conventions
 
 A helper application written for Node.js designed to take a list of images from a Google Sheet, rename them by their SKU, updload them to your FTP server, and generate a CSV file.
 
-##Getting Started
+## Getting Started
 
-###System Requirements
+### System Requirements
 
 - You will need Node.js installed on your machine to run naming-conventions.  You can find the appropriate version of Node.js [here](https://nodejs.org/en/download/).
 	** The file paths referenced within the app are made to run on a Windows system.  Some changes may be required to run on Mac or Linux.
