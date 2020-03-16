@@ -12,12 +12,11 @@ const fsp = promisify('fs');
 dotenv.config({ path: '.env'});
 
 // sheets endpoint formatted for JSON
-const landingZone = 'https://spreadsheets.google.com/feeds/cells/1pkIuT3pVOy1ku4byvxhyrIMTJSAHbi1krNUL2834gwU/1/public/full?alt=json';
-
+const landingZone = process.env.LANDING_ZONE;
 const _ftp = new PromiseFtp();
 const _localFilePath = './images/';
 const _remoteFilePath = '';
-const DOWNLOAD_DIR = Path.join(process.env.HOME || process.env.USERPROFILE, '\\Downloads\\products - images.csv');
+const DOWNLOAD_DIR = Path.join(process.env.HOME || process.env.USERPROFILE, '\\Downloads\\products - images ' + Date.now() + '.csv');
 
 const csvWriter = createCsvWriter({
 	path: DOWNLOAD_DIR,
@@ -30,7 +29,17 @@ const csvWriter = createCsvWriter({
 	]
 });
 
-const vendor = process.argv[2]  || '';
+function validateEmail(email) {
+    const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    if (re.test(String(email).toLowerCase())) {
+    	console.log("Email validated.  Great Job!");
+    } else {
+    	console.log("Bad email... leaving empty");
+    }
+    return re.test(String(email).toLowerCase());
+}
+
+const vendor = validateEmail(process.argv[2]) ? process.argv[2]  : '';
 
 function Ftp(env) {
 	this.config = {
@@ -45,6 +54,7 @@ Ftp.prototype.mput = function(fileList) {
 		.then(() => multiPutFiles(fileList))
 		.then(() => {
 			console.log('disconnecting...')
+			clearDir()
 			return _ftp.end()
 		})
 		.catch((err) => { console.log(err.toString()) })
@@ -61,6 +71,7 @@ Ftp.prototype.publish = function(ext) {
 function multiPutFiles(fileList) {
 	return new Promise(function(resolve, reject) {
 		let chain = Promise.resolve()
+		console.log('CSV generated!');
 
 		fileList.forEach(function(file, i, arr) {
 			chain = chain.then(() => {
@@ -132,6 +143,7 @@ function shuckThis(body) {
 		}
 		console.log(ledger);
 		console.log(fileTypes);
+		console.log('...Building CSV');
 		return csvWriter.writeRecords(ledger)
 			.then(() => resolve({
 				ledger: ledger,
@@ -169,6 +181,20 @@ async function downloadImage(info) {
 		writer.on('error', reject)
 	})
 
+}
+
+async function clearDir() {
+
+	Fs.readdir(_localFilePath, async (err, files) => {
+		if (err) throw err;
+		console.log('Cleaning up...');
+
+		for (const file of files) {
+			await Fs.unlink(Path.join(_localFilePath, file), err => {
+				if (err) throw err;
+			});
+		}
+	});
 }
 
 const ftp = new Ftp();
