@@ -1,6 +1,6 @@
 # naming-conventions
 
-A helper application written for Node.js designed to take a list of images from a Google Sheet, rename them by their SKU, updload them to your FTP server, and generate a CSV file.
+A helper application written for Node.js designed to take a list of images from a Google Sheet, rename them by their SKU, upload them to your FTP server, and generate a CSV file.
 
 ## Getting Started
 
